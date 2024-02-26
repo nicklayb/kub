@@ -8,7 +8,7 @@ import Url.Parser as Parser exposing ((</>), Parser, oneOf, s)
 
 type Route
     = Home
-    | Game Int
+    | Game
 
 
 parser : Parser (Route -> a) a
@@ -17,7 +17,7 @@ parser =
         </> oneOf
                 [ Parser.map Home Parser.top
                 , Parser.map Home (s "home")
-                , Parser.map Game (s "game" </> Parser.int)
+                , Parser.map Game (s "game")
                 ]
 
 
@@ -34,8 +34,8 @@ routeToString page =
                 Home ->
                     [ "home" ]
 
-                Game seed ->
-                    [ "game", String.fromInt seed ]
+                Game ->
+                    [ "game" ]
     in
     String.join "/" ("/kub" :: pieces)
 

@@ -1,8 +1,9 @@
-module Page.Game exposing (Model, Msg, init, toSession, update, view)
+port module Page.Game exposing (Model, Msg, init, toSession, update, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, href, style)
 import Html.Events exposing (onClick)
+import Json.Encode
 import Kub.Grid as Grid exposing (..)
 import Kub.Merge as Merge exposing (..)
 import Page exposing (PageDefinition)
@@ -11,6 +12,8 @@ import Session exposing (..)
 import Task exposing (..)
 import Utils exposing (..)
 
+
+port persistGame : Json.Encode.Value -> Cmd msg
 
 type State
     = Playing
@@ -37,10 +40,16 @@ type Count
     = Count Cell Int
 
 
-init : Session -> Int -> ( Model, Cmd Msg )
-init session seed =
+init : Session -> ( Model, Cmd Msg )
+init session =
+    let
+        sessionGrid = 
+            case session of
+                Guest _ { grid } -> 
+                    grid
+    in
     ( { session = session
-      , grid = Grid.init size seed
+      , grid = sessionGrid
       , selected = []
       , state = Playing
       , score = 0
@@ -199,7 +208,11 @@ update msg model =
                     ( model, Cmd.none )
 
         FallGrid ->
-            ( fallGrid model, Cmd.none )
+            let
+                fallenModel =
+                    fallGrid model
+            in
+            ( fallenModel, saveGame fallenModel )
 
 
 handleClick : Coord -> Model -> ( Model, Cmd Msg )
@@ -278,3 +291,7 @@ setSelected coord model =
 toSession : Model -> Session
 toSession { session } =
     session
+
+saveGame : Model -> Cmd msg
+saveGame { grid } =
+    persistGame <| Grid.encode grid

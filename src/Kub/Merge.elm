@@ -1,7 +1,6 @@
 module Kub.Merge exposing (fallDown, remove, siblingsOf)
 
 import Array exposing (..)
-import Debug exposing (..)
 import Kub.Direction exposing (..)
 import Kub.Grid exposing (..)
 import Utils
