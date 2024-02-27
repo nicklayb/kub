@@ -16,7 +16,6 @@ parser =
     s "kub"
         </> oneOf
                 [ Parser.map Home Parser.top
-                , Parser.map Home (s "home")
                 , Parser.map Game (s "game")
                 ]
 
@@ -32,7 +31,7 @@ routeToString page =
         pieces =
             case page of
                 Home ->
-                    [ "home" ]
+                    []
 
                 Game ->
                     [ "game" ]

@@ -1,4 +1,4 @@
-module Model exposing (init, Model(..), update, Msg(..))
+module Model exposing (Model(..), Msg(..), init, update)
 
 import Browser
 import Browser.Navigation as Nav
@@ -33,8 +33,8 @@ init flagsInput url key =
     let
         sessionData =
             flagsInput
-            |> Flags.decode
-            |> Flags.toSessionData
+                |> Flags.decode
+                |> Flags.toSessionData
     in
     changeRouteTo (Route.fromUrl url) (Redirect (Session.init sessionData key))
 
