@@ -51,6 +51,7 @@ type Msg
     | UrlChanged Url.Url
     | GotHomeMsg Home.Msg
     | GotGameMsg Game.Msg
+    | RedirectTo Route
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -80,6 +81,9 @@ update msg model =
             Home.update subMsg home
                 |> updateWith Home GotHomeMsg model
 
+        ( RedirectTo route, _ ) ->
+            changeRouteTo (Just route) model
+
         ( _, _ ) ->
             ( model, Cmd.none )
 
@@ -92,7 +96,7 @@ changeRouteTo maybeRoute model =
     in
     case maybeRoute of
         Nothing ->
-            ( NotFound session, Cmd.none )
+            ( NotFound session, Nav.replaceUrl (Session.navKey session) (Route.routeToString Route.Home) )
 
         Just Route.Home ->
             Home.init session

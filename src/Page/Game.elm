@@ -15,6 +15,7 @@ import Utils exposing (..)
 
 port persistGame : Json.Encode.Value -> Cmd msg
 
+
 type State
     = Playing
     | Falling
@@ -25,8 +26,6 @@ type alias Model =
     , grid : Grid
     , selected : List Coord
     , state : State
-    , score : Int
-    , combo : Int
     , lastColor : Maybe Cell
     }
 
@@ -43,17 +42,15 @@ type Count
 init : Session -> ( Model, Cmd Msg )
 init session =
     let
-        sessionGrid = 
+        sessionGrid =
             case session of
-                Guest _ { grid } -> 
+                Guest _ { grid } ->
                     grid
     in
     ( { session = session
       , grid = sessionGrid
       , selected = []
       , state = Playing
-      , score = 0
-      , combo = 0
       , lastColor = Nothing
       }
     , Cmd.none
@@ -80,15 +77,12 @@ statsView : Model -> Html Msg
 statsView model =
     let
         defaultStats =
-            [ ( "Score", scoreText model )
-            , ( "Best combo", comboText model )
-            , ( "Remaining", totalText model )
+            [ ( "Remaining", totalText model )
             ]
 
         appends =
             [ div [ class "stats" ] [ viewProgress model.grid ]
             , div [ class "stats" ] [ a [ href "https://nboisvert.com" ] [ text "Website" ] ]
-            , div [ class "stats" ] [ a [ href "https://github.com/nicklayb/kub" ] [ text "Source" ] ]
             ]
     in
     div [ class "flex stats-box row" ]
@@ -102,16 +96,6 @@ colorCounters model =
             ( toText color, String.fromInt (Grid.countCell color model.grid) )
     in
     List.map calculateColor Grid.asList
-
-
-scoreText : Model -> String
-scoreText { score } =
-    String.fromInt score
-
-
-comboText : Model -> String
-comboText { combo } =
-    String.fromInt combo
 
 
 totalText : Model -> String
@@ -219,8 +203,6 @@ handleClick : Coord -> Model -> ( Model, Cmd Msg )
 handleClick coord model =
     if List.member coord model.selected && List.length model.selected > 1 then
         ( model
-            |> addScore
-            |> updateCombo
             |> updateLastColor coord
             |> removeSelected
         , dispatchFall
@@ -251,29 +233,6 @@ updateLastColor coord model =
     { model | lastColor = getAt coord model.grid }
 
 
-addScore : Model -> Model
-addScore model =
-    { model | score = model.score + computeScore model.selected }
-
-
-updateCombo : Model -> Model
-updateCombo model =
-    let
-        currentCombo =
-            List.length model.selected
-    in
-    Utils.updateIf (\m -> { m | combo = currentCombo }) model (currentCombo > model.combo)
-
-
-computeScore : List Coord -> Int
-computeScore coords =
-    let
-        withIndex =
-            List.indexedMap Tuple.pair coords
-    in
-    List.foldl (\( index, _ ) acc -> acc + index) 0 withIndex
-
-
 fallGrid : Model -> Model
 fallGrid model =
     { model | grid = Merge.fallDown model.grid, state = Playing }
@@ -291,6 +250,7 @@ setSelected coord model =
 toSession : Model -> Session
 toSession { session } =
     session
+
 
 saveGame : Model -> Cmd msg
 saveGame { grid } =
